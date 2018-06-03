@@ -4,9 +4,12 @@
 <head>
     <meta charset="UTF-8" />
     <title>proyecto</title>
-    <script src="react.development.js"></script>
-    <script src="react-dom.development.js"></script>
-    <script src="babel.min.js"></script>
+    <script src="lib/babel.min.js"></script>
+    <script src="lib/react.production.min.js"></script>
+    <script src="lib/react-dom.production.min.js"></script>
+    <script src="lib/prop-types.min.js"></script>
+    <script src="lib/reactstrap.full.min.js"></script>
+    <link rel="stylesheet" href="lib/css/bootstrap.min.css"></link>
 </head>
 
 <body>
@@ -14,15 +17,29 @@
 
     <script type="text/babel">
         
+        var Container = Reactstrap.Container;
+        var Row = Reactstrap.Row;
+        var Col = Reactstrap.Col;
+        
+        /*
+         * use this for something later...
+         * this.setState(prevState => {
+                    const { selectedDB, databases } = prevState;
+                    return {
+                      selectedDB: databases.findIndex(
+                        (_, index) => index !== selectedDB
+                      )
+                    };
+                  });
+         */
+        
         const databases = [
         {
-          name: "database",
-
+          name: "facturas",
           fields: {
             id: { type: "number" },
-            title: { type: "string" },
-            description: { type: "string" },
-            date: { type: "date" }
+            fecha: { type: "date" },
+            cliente: { type: "string" },
           }
         },
         {
@@ -48,50 +65,86 @@
           this.state = {
             data: [],
             databases,
-            selectedDB: 1,
+            selectedDB: databases[0],
             selectedItem: undefined
           };
         }
 
         componentWillReceiveProps() {}
+        
+        componentWillMount(){
+            this.onGetData()
+        }
 
         render() {
           const { selectedDB, databases, data, selectedItem } = this.state;
           return (
             <div>
-              <button
-                onClick={() => {
-                  this.setState(prevState => {
-                    const { selectedDB, databases } = prevState;
-                    return {
-                      selectedDB: databases.findIndex(
-                        (_, index) => index !== selectedDB
-                      )
-                    };
-                  });
-                }}
-              >
-                Switch DataBase
-              </button>
-              <Table
-                data={data}
-                database={databases[selectedDB]}
-                onSelectItem={this.onSelectItem}
-              />
-              <Form
-                database={databases[selectedDB]}
-                onAddData={this.onAddData}
-                onSetData={this.onSetData}
-                onDelData={this.onDelData}
-                selectedItem={selectedItem}
-              />
+              <header>
+                <Container fluid>
+                    <Row>
+                    {databases.map((DB) => (<Col onClick={() => this.onSelectDataBase(DB)}>{DB.name}</Col>))}
+                    </Row>
+                </Container>
+              </header>  
+              <Container fluid>
+                <Row>
+                    <Col>
+                        <Table
+                          data={data}
+                          database={selectedDB}
+                          onSelectItem={this.onSelectItem}
+                        />
+                    </Col>
+                    <Col>
+                        <Form
+                            database={selectedDB}
+                            onAddData={this.onAddData}
+                            onSetData={this.onSetData}
+                            onDelData={this.onDelData}
+                            selectedItem={selectedItem}
+                        />
+                   </Col> 
+                </Row>
+              </Container>  
             </div>
           );
         }
-
+        onSelectDataBase = selectedDB => {
+            this.setState({ selectedDB })
+        }
+        onGetData = () => {
+            const { selectedDB } = this.state
+            
+            fetch(`http://localhost/Lic/trabajo09/hello.php/${selectedDB.name}`)
+                .then((res) => {
+                    return res.json();
+                })
+                .then((data) => {
+                    this.setState({data});
+                    console.log('data',data)
+                })
+        }
+        
+        onFact = (args) => {
+            console.log(args)
+            const { selectedDB } = this.state
+            fetch(`http://localhost/Lic/trabajo09/hello.php/${selectedDB.name}`, {
+                method: "post",
+                headers: {'Content-Type': 'application/json',
+                                   'Content-Length': 20},
+                body: JSON.stringify({...args})
+            }).then((res) => {
+                    return res.json();
+                })
+                .then((data) => {
+                    console.log('data',data)
+                })
+        }
+            
         onAddData = newItem => {
           const { data } = this.state;
-
+          this.onFact({ ...newItem })
           this.setState({ data: [...data, { ...newItem }] });
         };
 
@@ -205,7 +258,7 @@
 
         return (
           <div>
-            <h1>Table :{name}</h1>
+            <h1>Form : {name}</h1>
             <table>
               {Object.keys(fields).map(key => {
                 const { type: typeOf } = fields[key];
