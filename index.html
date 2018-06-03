@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>proyecto</title>
+    <script src="react.development.js"></script>
+    <script src="react-dom.development.js"></script>
+    <script src="babel.min.js"></script>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        
+        const databases = [
+        {
+          name: "database",
+
+          fields: {
+            id: { type: "number" },
+            title: { type: "string" },
+            description: { type: "string" },
+            date: { type: "date" }
+          }
+        },
+        {
+          name: "database#2",
+          fields: {
+            name: { type: "string" },
+            bornDate: { type: "date" },
+            info: { type: "string" }
+          }
+        }
+      ];
+      
+      function setFieldByType(typeOf, value) {
+        if (!typeOf) return value;
+        if (typeOf === "date") return new Date(value).toDateString();
+
+        return value;
+      }
+
+      class App extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            data: [],
+            databases,
+            selectedDB: 1,
+            selectedItem: undefined
+          };
+        }
+
+        componentWillReceiveProps() {}
+
+        render() {
+          const { selectedDB, databases, data, selectedItem } = this.state;
+          return (
+            <div>
+              <button
+                onClick={() => {
+                  this.setState(prevState => {
+                    const { selectedDB, databases } = prevState;
+                    return {
+                      selectedDB: databases.findIndex(
+                        (_, index) => index !== selectedDB
+                      )
+                    };
+                  });
+                }}
+              >
+                Switch DataBase
+              </button>
+              <Table
+                data={data}
+                database={databases[selectedDB]}
+                onSelectItem={this.onSelectItem}
+              />
+              <Form
+                database={databases[selectedDB]}
+                onAddData={this.onAddData}
+                onSetData={this.onSetData}
+                onDelData={this.onDelData}
+                selectedItem={selectedItem}
+              />
+            </div>
+          );
+        }
+
+        onAddData = newItem => {
+          const { data } = this.state;
+
+          this.setState({ data: [...data, { ...newItem }] });
+        };
+
+        onSetData = newItem => {
+          const { data } = this.state;
+          const newData = data.filter(({ id }) => id !== newItem.id);
+
+          this.setState({
+            data: [...newData, { ...newItem }],
+            selectedItem: undefined
+          });
+        };
+
+        onDelData = item => {
+          const { data } = this.state;
+          const newData = data.filter(({ id }) => id !== item.id);
+
+          this.setState({
+            data: [...newData],
+            selectedItem: undefined
+          });
+        };
+
+        onSelectItem = item => {
+          this.setState({ selectedItem: { ...item } });
+        };
+      }
+      
+      class Table extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            database: props.database,
+            data: props.data || []
+          };
+        }
+
+        componentWillReceiveProps(nextProps) {
+          const { database, data } = nextProps;
+          this.setState({ database, data });
+        }
+
+        render() {
+          const { database, data } = this.state;
+
+          if (!database) return <h2>Loading...</h2>;
+
+          const { name, fields } = database;
+          const { onSelectItem } = this.props;
+
+          return (
+            <div>
+              <h1>Table :{name}</h1>
+              <table>
+                <TableHeader fields={fields} />
+                <TableBody fields={fields} data={data} onSelectItem={onSelectItem} />
+              </table>
+            </div>
+          );
+        }
+      }
+
+      const TableHeader = ({ fields }) => {
+        return <thead>{Object.keys(fields).map(key => <th>{key}</th>)}</thead>;
+      };
+
+      const TableBody = ({ fields, data, onSelectItem }) => {
+        return (
+          <tbody>
+            {data.map(row => (
+              <tr key={row.id} onClick={() => onSelectItem({ ...row })}>
+                {Object.keys(fields).map(key => {
+                  const { type: typeOf } = fields[key];
+                  const value = setFieldByType(typeOf, row[key]);
+                  return <td>{value}</td>;
+                })}
+              </tr>
+            ))}
+          </tbody>
+        );
+      };
+  
+    class Form extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          database: props.database,
+          fieldsData: {}
+        };
+      }
+
+      componentWillReceiveProps(nextProps) {
+        const { database, selectedItem } = nextProps;
+        const { fields = {} } = database;
+
+        const nextFields = Object.keys(fields).reduce((acc, key) => {
+          acc[key] = selectedItem ? selectedItem[key] : "";
+          return acc;
+        }, {});
+
+        this.setState({ database, fieldsData: nextFields });
+      }
+
+      render() {
+        const { database, fieldsData } = this.state;
+
+        if (!database) return <h2>Loading...</h2>;
+
+        const { name, fields } = database;
+        const { selectedItem } = this.props;
+
+        return (
+          <div>
+            <h1>Table :{name}</h1>
+            <table>
+              {Object.keys(fields).map(key => {
+                const { type: typeOf } = fields[key];
+                return (
+                  <tr>
+                    <td>{key}</td>
+                    <td>
+                      <input
+                        name={key}
+                        type={typeOf}
+                        value={fieldsData[key]}
+                        onChange={this.handleOnChangeFieldData}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </table>
+            {!selectedItem ? (
+              <button
+                onClick={() => {
+                  const { fieldsData } = this.state;
+                  this.props.onAddData({ ...fieldsData });
+                  this.setState({ fieldsData: {} });
+                }}
+              >
+                Add
+              </button>
+            ) : (<div>
+              <button
+                onClick={() => {
+                  const { fieldsData } = this.state;
+                  this.props.onSetData({ ...fieldsData });
+                  this.setState({ fieldsData: {} });
+                }}
+              >
+                Set
+              </button>
+                <button
+                  onClick={() => {
+                    const { fieldsData } = this.state;
+                    this.props.onDelData({ ...fieldsData });
+                    this.setState({ fieldsData: {} });
+                  }}
+                >
+                  Del
+              </button>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      handleOnChangeFieldData = e => {
+        const { fieldsData } = this.state;
+        const newValue = e.target.value;
+        const field = e.target.name;
+        const newFieldsData = { ...fieldsData, [field]: newValue };
+
+        this.setState({ fieldsData: newFieldsData });
+      };
+    }
+    
+    ReactDOM.render(<App />, document.getElementById("root"));
+    </script>
+
+</body>
+
+</html>
