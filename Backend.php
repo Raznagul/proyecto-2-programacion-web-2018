@@ -342,11 +342,11 @@
         }
     }
 
-    class AmplificadorSenal {
+    class GeneradorSenal {
 
         function get() {
             try {
-                $stmt = $GLOBALS['file_db']->prepare("SELECT * FROM amplificador_senal");
+                $stmt = $GLOBALS['file_db']->prepare("SELECT * FROM generador_senal");
                 $stmt->execute();
 
                 $data = Array();
@@ -366,19 +366,245 @@
               if($request['method'] === 'put'){
                   return $this->put($request);
               }else if($request['method'] === 'delete'){
-                  return $this->delete($request['facturaId']);
+                  return $this->delete($request['generador_senal_id']);
               }
 
-              $tipo_amplificado_senal = $request['tipo_amplificado_senal'];
+              $capacidad_salida = $request['capacidad_salida'];
+              $numero_serie = $request['numero_serie'];
+              $fecha_instalacion = $request['fecha_instalacion'];
+              $fecha_proximo_mantenimiento = $request['fecha_proximo_mantenimiento'];
+              $marca = $request['marca'];
+              $modelo = $request['modelo'];
+              $zona_id = $request['zona_id'];
+
+              $insert = "INSERT INTO generador_senal (capacidad_salida, numero_serie, fecha_instalacion, fecha_proximo_mantenimiento, marca, modelo, zona_id) VALUES (:capacidad_salida, :numero_serie, :fecha_instalacion, :fecha_proximo_mantenimiento, :marca, :modelo, :zona_id)";
+              $stmt = $GLOBALS['file_db']->prepare($insert);
+              $stmt->bindParam(':capacidad_salida', $capacidad_salida);
+              $stmt->bindParam(':numero_serie', $numero_serie);
+              $stmt->bindParam(':fecha_instalacion', $fecha_instalacion);
+              $stmt->bindParam(':fecha_proximo_mantenimiento', $fecha_proximo_mantenimiento);
+              $stmt->bindParam(':marca', $marca);
+              $stmt->bindParam(':modelo', $modelo);
+              $stmt->bindParam(':zona_id', $zona_id);
+              $stmt->execute();
+
+              $stmt = $GLOBALS['file_db']->prepare("SELECT last_insert_rowid() as row");
+              $stmt->execute();
+              $data = Array();
+              while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                  $data[] = $result;
+              }
+              echo json_encode($data);
+
+            } catch (Exception $e) {
+              $GLOBALS['file_db']->rollBack();
+              echo "Failed: " . $e->getMessage();
+            }
+        }
+
+        function put($request){
+            try {
+                if ($request!=null) {
+                    $generador_senal_id = $request['generador_senal_id'];
+                    $capacidad_salida = $request['capacidad_salida'];
+                    $numero_serie = $request['numero_serie'];
+                    $fecha_instalacion = $request['fecha_instalacion'];
+                    $fecha_proximo_mantenimiento = $request['fecha_proximo_mantenimiento'];
+                    $marca = $request['marca'];
+                    $modelo = $request['modelo'];
+                    $zona_id = $request['zona_id'];
+
+                    $update = "UPDATE generador_senal SET capacidad_salida = :capacidad_salida, numero_serie = :numero_serie, fecha_instalacion = :fecha_instalacion, fecha_proximo_mantenimiento = :fecha_proximo_mantenimiento, marca = :marca, modelo = :modelo, zona_id = :zona_id where generador_senal_id = :generador_senal_id";
+                    
+                    $stmt = $GLOBALS['file_db']->prepare($update);
+                    $stmt->bindParam(':generador_senal_id', $generador_senal_id);
+                    $stmt->bindParam(':capacidad_salida', $capacidad_salida);
+                    $stmt->bindParam(':numero_serie', $numero_serie);
+                    $stmt->bindParam(':fecha_instalacion', $fecha_instalacion);
+                    $stmt->bindParam(':fecha_proximo_mantenimiento', $fecha_proximo_mantenimiento);
+                    $stmt->bindParam(':marca', $marca);
+                    $stmt->bindParam(':modelo', $modelo);
+                    $stmt->bindParam(':zona_id', $zona_id);
+
+                    $stmt->execute();
+                    echo json_encode([]);
+                } else {
+                    echo "";
+                }
+                
+            } catch (Exception $e) {
+              echo "Failed: " . $e->getMessage();
+            }
+        }
+
+        function delete($generador_senal_id=null){
+            try {
+                if ($generador_senal_id!=null) {
+                    $stmt = $GLOBALS['file_db']->prepare("DELETE from generador_senal where generador_senal_id = :generador_senal_id");
+                    $stmt->bindParam(':generador_senal_id', $generador_senal_id, PDO::PARAM_STR);
+                    $stmt->execute();
+                    echo json_encode([]);
+                } else {
+                    echo "";
+                }
+                
+            } catch (Exception $e) {
+              echo "Failed: " . $e->getMessage();
+            }
+        }
+    }
+
+    class LineaConexion {
+
+        function get() {
+            try {
+                $stmt = $GLOBALS['file_db']->prepare("SELECT * FROM linea_conexion");
+                $stmt->execute();
+
+                $data = Array();
+                while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $data[] = $result;
+                }
+                echo json_encode($data);
+            } catch (Exception $e) {
+            echo "Failed: " . $e->getMessage();
+            }
+        }
+
+        function post() {
+            try {
+              $request = json_decode(file_get_contents('php://input'), True); 
+
+              if($request['method'] === 'put'){
+                  return $this->put($request);
+              }else if($request['method'] === 'delete'){
+                  return $this->delete($request['linea_conexion_id']);
+              }
+
+              $numero_serie = $request['numero_serie'];
+              $fecha_instalacion = $request['fecha_instalacion'];
+              $fecha_proximo_mantenimiento = $request['fecha_proximo_mantenimiento'];
+              $marca = $request['marca'];
+              $modelo = $request['modelo'];
+              $tipo_linea_conexion = $request['tipo_linea_conexion'];
+              $conexion_a = $request['conexion_a'];
+              $conexion_b = $request['conexion_b'];
+
+              $insert = "INSERT INTO linea_conexion (numero_serie, fecha_instalacion, fecha_proximo_mantenimiento, marca, modelo, tipo_linea_conexion, conexion_a, conexion_b) VALUES (:numero_serie, :fecha_instalacion, :fecha_proximo_mantenimiento, :marca, :modelo, :tipo_linea_conexion, :conexion_a, :conexion_b)";
+              $stmt = $GLOBALS['file_db']->prepare($insert);
+              $stmt->bindParam(':numero_serie', $numero_serie);
+              $stmt->bindParam(':fecha_instalacion', $fecha_instalacion);
+              $stmt->bindParam(':fecha_proximo_mantenimiento', $fecha_proximo_mantenimiento);
+              $stmt->bindParam(':marca', $marca);
+              $stmt->bindParam(':modelo', $modelo);
+              $stmt->bindParam(':tipo_linea_conexion', $tipo_linea_conexion);
+              $stmt->bindParam(':conexion_a', $conexion_a);
+              $stmt->bindParam(':conexion_b', $conexion_b);
+              $stmt->execute();
+
+              $stmt = $GLOBALS['file_db']->prepare("SELECT last_insert_rowid() as row");
+              $stmt->execute();
+              $data = Array();
+              while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                  $data[] = $result;
+              }
+              echo json_encode($data);
+
+            } catch (Exception $e) {
+              $GLOBALS['file_db']->rollBack();
+              echo "Failed: " . $e->getMessage();
+            }
+        }
+
+        function put($request){
+            try {
+                if ($request!=null) {
+                    $linea_conexion_id = $request['linea_conexion_id'];
+                    $numero_serie = $request['numero_serie'];
+                    $fecha_instalacion = $request['fecha_instalacion'];
+                    $fecha_proximo_mantenimiento = $request['fecha_proximo_mantenimiento'];
+                    $marca = $request['marca'];
+                    $modelo = $request['modelo'];
+                    $tipo_linea_conexion = $request['tipo_linea_conexion'];
+                    $conexion_a = $request['conexion_a'];
+                    $conexion_b = $request['conexion_b'];
+
+                    $update = "UPDATE linea_conexion SET numero_serie = :numero_serie, fecha_instalacion = :fecha_instalacion, fecha_proximo_mantenimiento = :fecha_proximo_mantenimiento, marca = :marca, modelo = :modelo, tipo_linea_conexion = :tipo_linea_conexion, conexion_a = :conexion_a, conexion_b = :conexion_b where linea_conexion_id = :linea_conexion_id";
+                    
+                    $stmt = $GLOBALS['file_db']->prepare($update);
+                    $stmt->bindParam(':linea_conexion_id', $linea_conexion_id);
+                    $stmt->bindParam(':numero_serie', $numero_serie);
+                    $stmt->bindParam(':fecha_instalacion', $fecha_instalacion);
+                    $stmt->bindParam(':fecha_proximo_mantenimiento', $fecha_proximo_mantenimiento);
+                    $stmt->bindParam(':marca', $marca);
+                    $stmt->bindParam(':modelo', $modelo);
+                    $stmt->bindParam(':tipo_linea_conexion', $tipo_linea_conexion);
+                    $stmt->bindParam(':conexion_a', $conexion_a);
+                    $stmt->bindParam(':conexion_b', $conexion_b);
+
+                    $stmt->execute();
+                    echo json_encode([]);
+                } else {
+                    echo "";
+                }
+                
+            } catch (Exception $e) {
+              echo "Failed: " . $e->getMessage();
+            }
+        }
+
+        function delete($linea_conexion_id=null){
+            try {
+                if ($linea_conexion_id!=null) {
+                    $stmt = $GLOBALS['file_db']->prepare("DELETE from linea_conexion where linea_conexion_id = :linea_conexion_id");
+                    $stmt->bindParam(':linea_conexion_id', $linea_conexion_id, PDO::PARAM_STR);
+                    $stmt->execute();
+                    echo json_encode([]);
+                } else {
+                    echo "";
+                }
+                
+            } catch (Exception $e) {
+              echo "Failed: " . $e->getMessage();
+            }
+        }
+    }
+
+    class Poste {
+
+        function get() {
+            try {
+                $stmt = $GLOBALS['file_db']->prepare("SELECT * FROM poste");
+                $stmt->execute();
+
+                $data = Array();
+                while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $data[] = $result;
+                }
+                echo json_encode($data);
+            } catch (Exception $e) {
+            echo "Failed: " . $e->getMessage();
+            }
+        }
+
+        function post() {
+            try {
+              $request = json_decode(file_get_contents('php://input'), True); 
+
+              if($request['method'] === 'put'){
+                  return $this->put($request);
+              }else if($request['method'] === 'delete'){
+                  return $this->delete($request['poste_id']);
+              }
+
               $numero_serie = $request['numero_serie'];
               $fecha_instalacion = $request['fecha_instalacion'];
               $fecha_proximo_mantenimiento = $request['fecha_proximo_mantenimiento'];
               $marca = $request['marca'];
               $modelo = $request['modelo'];
 
-              $insert = "INSERT INTO amplificador_senal (tipo_amplificado_senal, numero_serie, fecha_instalacion, fecha_proximo_mantenimiento, marca, modelo) VALUES (:tipo_amplificado_senal, :numero_serie, :fecha_instalacion, :fecha_proximo_mantenimiento, :marca, :modelo)";
+              $insert = "INSERT INTO poste (numero_serie, fecha_instalacion, fecha_proximo_mantenimiento, marca, modelo) VALUES (:numero_serie, :fecha_instalacion, :fecha_proximo_mantenimiento, :marca, :modelo)";
               $stmt = $GLOBALS['file_db']->prepare($insert);
-              $stmt->bindParam(':tipo_amplificado_senal', $tipo_amplificado_senal);
               $stmt->bindParam(':numero_serie', $numero_serie);
               $stmt->bindParam(':fecha_instalacion', $fecha_instalacion);
               $stmt->bindParam(':fecha_proximo_mantenimiento', $fecha_proximo_mantenimiento);
@@ -403,19 +629,17 @@
         function put($request){
             try {
                 if ($request!=null) {
-                    $amplificado_senal_id = $request['amplificado_senal_id'];
-                    $tipo_amplificado_senal = $request['tipo_amplificado_senal'];
+                    $amplificado_senal_id = $request['poste_id'];
                     $numero_serie = $request['numero_serie'];
                     $fecha_instalacion = $request['fecha_instalacion'];
                     $fecha_proximo_mantenimiento = $request['fecha_proximo_mantenimiento'];
                     $marca = $request['marca'];
                     $modelo = $request['modelo'];
 
-                    $update = "UPDATE amplificador_senal SET tipo_amplificado_senal = :tipo_amplificado_senal, numero_serie = :numero_serie, fecha_instalacion = :fecha_instalacion, fecha_proximo_mantenimiento = :fecha_proximo_mantenimiento, marca = :marca, modelo = :modelo where amplificado_senal_id = :amplificado_senal_id";
+                    $update = "UPDATE poste SET numero_serie = :numero_serie, fecha_instalacion = :fecha_instalacion, fecha_proximo_mantenimiento = :fecha_proximo_mantenimiento, marca = :marca, modelo = :modelo where poste_id = :poste_id";
                     
                     $stmt = $GLOBALS['file_db']->prepare($update);
-                    $stmt->bindParam(':amplificado_senal_id', $amplificado_senal_id);
-                    $stmt->bindParam(':tipo_amplificado_senal', $tipo_amplificado_senal);
+                    $stmt->bindParam(':poste_id', $amplificado_senal_id);
                     $stmt->bindParam(':numero_serie', $numero_serie);
                     $stmt->bindParam(':fecha_instalacion', $fecha_instalacion);
                     $stmt->bindParam(':fecha_proximo_mantenimiento', $fecha_proximo_mantenimiento);
@@ -433,11 +657,11 @@
             }
         }
 
-        function delete($amplificado_senal_id=null){
+        function delete($poste_id=null){
             try {
-                if ($amplificado_senal_id!=null) {
-                    $stmt = $GLOBALS['file_db']->prepare("DELETE from amplificador_senal where amplificado_senal_id = :amplificado_senal_id");
-                    $stmt->bindParam(':amplificado_senal_id', $amplificado_senal_id, PDO::PARAM_STR);
+                if ($poste_id!=null) {
+                    $stmt = $GLOBALS['file_db']->prepare("DELETE from poste where poste_id = :poste_id");
+                    $stmt->bindParam(':poste_id', $poste_id, PDO::PARAM_STR);
                     $stmt->execute();
                     echo json_encode([]);
                 } else {
@@ -450,11 +674,11 @@
         }
     }
 
-    class AmplificadorSenal {
+    class Zona {
 
         function get() {
             try {
-                $stmt = $GLOBALS['file_db']->prepare("SELECT * FROM amplificador_senal");
+                $stmt = $GLOBALS['file_db']->prepare("SELECT * FROM zona");
                 $stmt->execute();
 
                 $data = Array();
@@ -474,24 +698,14 @@
               if($request['method'] === 'put'){
                   return $this->put($request);
               }else if($request['method'] === 'delete'){
-                  return $this->delete($request['facturaId']);
+                  return $this->delete($request['zona_id']);
               }
 
-              $tipo_amplificado_senal = $request['tipo_amplificado_senal'];
-              $numero_serie = $request['numero_serie'];
-              $fecha_instalacion = $request['fecha_instalacion'];
-              $fecha_proximo_mantenimiento = $request['fecha_proximo_mantenimiento'];
-              $marca = $request['marca'];
-              $modelo = $request['modelo'];
+              $tipo_zona = $request['tipo_zona'];
 
-              $insert = "INSERT INTO amplificador_senal (tipo_amplificado_senal, numero_serie, fecha_instalacion, fecha_proximo_mantenimiento, marca, modelo) VALUES (:tipo_amplificado_senal, :numero_serie, :fecha_instalacion, :fecha_proximo_mantenimiento, :marca, :modelo)";
+              $insert = "INSERT INTO zona (tipo_zona) VALUES (:tipo_zona)";
               $stmt = $GLOBALS['file_db']->prepare($insert);
-              $stmt->bindParam(':tipo_amplificado_senal', $tipo_amplificado_senal);
-              $stmt->bindParam(':numero_serie', $numero_serie);
-              $stmt->bindParam(':fecha_instalacion', $fecha_instalacion);
-              $stmt->bindParam(':fecha_proximo_mantenimiento', $fecha_proximo_mantenimiento);
-              $stmt->bindParam(':marca', $marca);
-              $stmt->bindParam(':modelo', $modelo);
+              $stmt->bindParam(':tipo_zona', $tipo_zona);
               $stmt->execute();
 
               $stmt = $GLOBALS['file_db']->prepare("SELECT last_insert_rowid() as row");
@@ -511,24 +725,14 @@
         function put($request){
             try {
                 if ($request!=null) {
-                    $amplificado_senal_id = $request['amplificado_senal_id'];
-                    $tipo_amplificado_senal = $request['tipo_amplificado_senal'];
-                    $numero_serie = $request['numero_serie'];
-                    $fecha_instalacion = $request['fecha_instalacion'];
-                    $fecha_proximo_mantenimiento = $request['fecha_proximo_mantenimiento'];
-                    $marca = $request['marca'];
-                    $modelo = $request['modelo'];
+                    $zona_id = $request['zona_id'];
+                    $tipo_zona = $request['tipo_zona'];
 
-                    $update = "UPDATE amplificador_senal SET tipo_amplificado_senal = :tipo_amplificado_senal, numero_serie = :numero_serie, fecha_instalacion = :fecha_instalacion, fecha_proximo_mantenimiento = :fecha_proximo_mantenimiento, marca = :marca, modelo = :modelo where amplificado_senal_id = :amplificado_senal_id";
+                    $update = "UPDATE zona SET tipo_zona = :tipo_zona where zona_id = :zona_id";
                     
                     $stmt = $GLOBALS['file_db']->prepare($update);
-                    $stmt->bindParam(':amplificado_senal_id', $amplificado_senal_id);
-                    $stmt->bindParam(':tipo_amplificado_senal', $tipo_amplificado_senal);
-                    $stmt->bindParam(':numero_serie', $numero_serie);
-                    $stmt->bindParam(':fecha_instalacion', $fecha_instalacion);
-                    $stmt->bindParam(':fecha_proximo_mantenimiento', $fecha_proximo_mantenimiento);
-                    $stmt->bindParam(':marca', $marca);
-                    $stmt->bindParam(':modelo', $modelo);
+                    $stmt->bindParam(':zona_id', $zona_id);
+                    $stmt->bindParam(':tipo_zona', $tipo_zona);
 
                     $stmt->execute();
                     echo json_encode([]);
@@ -541,445 +745,16 @@
             }
         }
 
-        function delete($amplificado_senal_id=null){
+        function delete($zona_id=null){
             try {
-                if ($amplificado_senal_id!=null) {
-                    $stmt = $GLOBALS['file_db']->prepare("DELETE from amplificador_senal where amplificado_senal_id = :amplificado_senal_id");
-                    $stmt->bindParam(':amplificado_senal_id', $amplificado_senal_id, PDO::PARAM_STR);
+                if ($zona_id!=null) {
+                    $stmt = $GLOBALS['file_db']->prepare("DELETE from zona where zona_id = :zona_id");
+                    $stmt->bindParam(':zona_id', $zona_id, PDO::PARAM_STR);
                     $stmt->execute();
                     echo json_encode([]);
                 } else {
                     echo "";
                 }
-                
-            } catch (Exception $e) {
-              echo "Failed: " . $e->getMessage();
-            }
-        }
-    }
-
-    class AmplificadorSenal {
-
-        function get() {
-            try {
-                $stmt = $GLOBALS['file_db']->prepare("SELECT * FROM amplificador_senal");
-                $stmt->execute();
-
-                $data = Array();
-                while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    $data[] = $result;
-                }
-                echo json_encode($data);
-            } catch (Exception $e) {
-            echo "Failed: " . $e->getMessage();
-            }
-        }
-
-        function post() {
-            try {
-              $request = json_decode(file_get_contents('php://input'), True); 
-
-              if($request['method'] === 'put'){
-                  return $this->put($request);
-              }else if($request['method'] === 'delete'){
-                  return $this->delete($request['facturaId']);
-              }
-
-              $tipo_amplificado_senal = $request['tipo_amplificado_senal'];
-              $numero_serie = $request['numero_serie'];
-              $fecha_instalacion = $request['fecha_instalacion'];
-              $fecha_proximo_mantenimiento = $request['fecha_proximo_mantenimiento'];
-              $marca = $request['marca'];
-              $modelo = $request['modelo'];
-
-              $insert = "INSERT INTO amplificador_senal (tipo_amplificado_senal, numero_serie, fecha_instalacion, fecha_proximo_mantenimiento, marca, modelo) VALUES (:tipo_amplificado_senal, :numero_serie, :fecha_instalacion, :fecha_proximo_mantenimiento, :marca, :modelo)";
-              $stmt = $GLOBALS['file_db']->prepare($insert);
-              $stmt->bindParam(':tipo_amplificado_senal', $tipo_amplificado_senal);
-              $stmt->bindParam(':numero_serie', $numero_serie);
-              $stmt->bindParam(':fecha_instalacion', $fecha_instalacion);
-              $stmt->bindParam(':fecha_proximo_mantenimiento', $fecha_proximo_mantenimiento);
-              $stmt->bindParam(':marca', $marca);
-              $stmt->bindParam(':modelo', $modelo);
-              $stmt->execute();
-
-              $stmt = $GLOBALS['file_db']->prepare("SELECT last_insert_rowid() as row");
-              $stmt->execute();
-              $data = Array();
-              while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                  $data[] = $result;
-              }
-              echo json_encode($data);
-
-            } catch (Exception $e) {
-              $GLOBALS['file_db']->rollBack();
-              echo "Failed: " . $e->getMessage();
-            }
-        }
-
-        function put($request){
-            try {
-                if ($request!=null) {
-                    $amplificado_senal_id = $request['amplificado_senal_id'];
-                    $tipo_amplificado_senal = $request['tipo_amplificado_senal'];
-                    $numero_serie = $request['numero_serie'];
-                    $fecha_instalacion = $request['fecha_instalacion'];
-                    $fecha_proximo_mantenimiento = $request['fecha_proximo_mantenimiento'];
-                    $marca = $request['marca'];
-                    $modelo = $request['modelo'];
-
-                    $update = "UPDATE amplificador_senal SET tipo_amplificado_senal = :tipo_amplificado_senal, numero_serie = :numero_serie, fecha_instalacion = :fecha_instalacion, fecha_proximo_mantenimiento = :fecha_proximo_mantenimiento, marca = :marca, modelo = :modelo where amplificado_senal_id = :amplificado_senal_id";
-                    
-                    $stmt = $GLOBALS['file_db']->prepare($update);
-                    $stmt->bindParam(':amplificado_senal_id', $amplificado_senal_id);
-                    $stmt->bindParam(':tipo_amplificado_senal', $tipo_amplificado_senal);
-                    $stmt->bindParam(':numero_serie', $numero_serie);
-                    $stmt->bindParam(':fecha_instalacion', $fecha_instalacion);
-                    $stmt->bindParam(':fecha_proximo_mantenimiento', $fecha_proximo_mantenimiento);
-                    $stmt->bindParam(':marca', $marca);
-                    $stmt->bindParam(':modelo', $modelo);
-
-                    $stmt->execute();
-                    echo json_encode([]);
-                } else {
-                    echo "";
-                }
-                
-            } catch (Exception $e) {
-              echo "Failed: " . $e->getMessage();
-            }
-        }
-
-        function delete($amplificado_senal_id=null){
-            try {
-                if ($amplificado_senal_id!=null) {
-                    $stmt = $GLOBALS['file_db']->prepare("DELETE from amplificador_senal where amplificado_senal_id = :amplificado_senal_id");
-                    $stmt->bindParam(':amplificado_senal_id', $amplificado_senal_id, PDO::PARAM_STR);
-                    $stmt->execute();
-                    echo json_encode([]);
-                } else {
-                    echo "";
-                }
-                
-            } catch (Exception $e) {
-              echo "Failed: " . $e->getMessage();
-            }
-        }
-    }
-
-    class AmplificadorSenal {
-
-        function get() {
-            try {
-                $stmt = $GLOBALS['file_db']->prepare("SELECT * FROM amplificador_senal");
-                $stmt->execute();
-
-                $data = Array();
-                while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    $data[] = $result;
-                }
-                echo json_encode($data);
-            } catch (Exception $e) {
-            echo "Failed: " . $e->getMessage();
-            }
-        }
-
-        function post() {
-            try {
-              $request = json_decode(file_get_contents('php://input'), True); 
-
-              if($request['method'] === 'put'){
-                  return $this->put($request);
-              }else if($request['method'] === 'delete'){
-                  return $this->delete($request['facturaId']);
-              }
-
-              $tipo_amplificado_senal = $request['tipo_amplificado_senal'];
-              $numero_serie = $request['numero_serie'];
-              $fecha_instalacion = $request['fecha_instalacion'];
-              $fecha_proximo_mantenimiento = $request['fecha_proximo_mantenimiento'];
-              $marca = $request['marca'];
-              $modelo = $request['modelo'];
-
-              $insert = "INSERT INTO amplificador_senal (tipo_amplificado_senal, numero_serie, fecha_instalacion, fecha_proximo_mantenimiento, marca, modelo) VALUES (:tipo_amplificado_senal, :numero_serie, :fecha_instalacion, :fecha_proximo_mantenimiento, :marca, :modelo)";
-              $stmt = $GLOBALS['file_db']->prepare($insert);
-              $stmt->bindParam(':tipo_amplificado_senal', $tipo_amplificado_senal);
-              $stmt->bindParam(':numero_serie', $numero_serie);
-              $stmt->bindParam(':fecha_instalacion', $fecha_instalacion);
-              $stmt->bindParam(':fecha_proximo_mantenimiento', $fecha_proximo_mantenimiento);
-              $stmt->bindParam(':marca', $marca);
-              $stmt->bindParam(':modelo', $modelo);
-              $stmt->execute();
-
-              $stmt = $GLOBALS['file_db']->prepare("SELECT last_insert_rowid() as row");
-              $stmt->execute();
-              $data = Array();
-              while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                  $data[] = $result;
-              }
-              echo json_encode($data);
-
-            } catch (Exception $e) {
-              $GLOBALS['file_db']->rollBack();
-              echo "Failed: " . $e->getMessage();
-            }
-        }
-
-        function put($request){
-            try {
-                if ($request!=null) {
-                    $amplificado_senal_id = $request['amplificado_senal_id'];
-                    $tipo_amplificado_senal = $request['tipo_amplificado_senal'];
-                    $numero_serie = $request['numero_serie'];
-                    $fecha_instalacion = $request['fecha_instalacion'];
-                    $fecha_proximo_mantenimiento = $request['fecha_proximo_mantenimiento'];
-                    $marca = $request['marca'];
-                    $modelo = $request['modelo'];
-
-                    $update = "UPDATE amplificador_senal SET tipo_amplificado_senal = :tipo_amplificado_senal, numero_serie = :numero_serie, fecha_instalacion = :fecha_instalacion, fecha_proximo_mantenimiento = :fecha_proximo_mantenimiento, marca = :marca, modelo = :modelo where amplificado_senal_id = :amplificado_senal_id";
-                    
-                    $stmt = $GLOBALS['file_db']->prepare($update);
-                    $stmt->bindParam(':amplificado_senal_id', $amplificado_senal_id);
-                    $stmt->bindParam(':tipo_amplificado_senal', $tipo_amplificado_senal);
-                    $stmt->bindParam(':numero_serie', $numero_serie);
-                    $stmt->bindParam(':fecha_instalacion', $fecha_instalacion);
-                    $stmt->bindParam(':fecha_proximo_mantenimiento', $fecha_proximo_mantenimiento);
-                    $stmt->bindParam(':marca', $marca);
-                    $stmt->bindParam(':modelo', $modelo);
-
-                    $stmt->execute();
-                    echo json_encode([]);
-                } else {
-                    echo "";
-                }
-                
-            } catch (Exception $e) {
-              echo "Failed: " . $e->getMessage();
-            }
-        }
-
-        function delete($amplificado_senal_id=null){
-            try {
-                if ($amplificado_senal_id!=null) {
-                    $stmt = $GLOBALS['file_db']->prepare("DELETE from amplificador_senal where amplificado_senal_id = :amplificado_senal_id");
-                    $stmt->bindParam(':amplificado_senal_id', $amplificado_senal_id, PDO::PARAM_STR);
-                    $stmt->execute();
-                    echo json_encode([]);
-                } else {
-                    echo "";
-                }
-                
-            } catch (Exception $e) {
-              echo "Failed: " . $e->getMessage();
-            }
-        }
-    }
-
-    class AmplificadorSenal {
-
-        function get() {
-            try {
-                $stmt = $GLOBALS['file_db']->prepare("SELECT * FROM amplificador_senal");
-                $stmt->execute();
-
-                $data = Array();
-                while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    $data[] = $result;
-                }
-                echo json_encode($data);
-            } catch (Exception $e) {
-            echo "Failed: " . $e->getMessage();
-            }
-        }
-
-        function post() {
-            try {
-              $request = json_decode(file_get_contents('php://input'), True); 
-
-              if($request['method'] === 'put'){
-                  return $this->put($request);
-              }else if($request['method'] === 'delete'){
-                  return $this->delete($request['facturaId']);
-              }
-
-              $tipo_amplificado_senal = $request['tipo_amplificado_senal'];
-              $numero_serie = $request['numero_serie'];
-              $fecha_instalacion = $request['fecha_instalacion'];
-              $fecha_proximo_mantenimiento = $request['fecha_proximo_mantenimiento'];
-              $marca = $request['marca'];
-              $modelo = $request['modelo'];
-
-              $insert = "INSERT INTO amplificador_senal (tipo_amplificado_senal, numero_serie, fecha_instalacion, fecha_proximo_mantenimiento, marca, modelo) VALUES (:tipo_amplificado_senal, :numero_serie, :fecha_instalacion, :fecha_proximo_mantenimiento, :marca, :modelo)";
-              $stmt = $GLOBALS['file_db']->prepare($insert);
-              $stmt->bindParam(':tipo_amplificado_senal', $tipo_amplificado_senal);
-              $stmt->bindParam(':numero_serie', $numero_serie);
-              $stmt->bindParam(':fecha_instalacion', $fecha_instalacion);
-              $stmt->bindParam(':fecha_proximo_mantenimiento', $fecha_proximo_mantenimiento);
-              $stmt->bindParam(':marca', $marca);
-              $stmt->bindParam(':modelo', $modelo);
-              $stmt->execute();
-
-              $stmt = $GLOBALS['file_db']->prepare("SELECT last_insert_rowid() as row");
-              $stmt->execute();
-              $data = Array();
-              while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                  $data[] = $result;
-              }
-              echo json_encode($data);
-
-            } catch (Exception $e) {
-              $GLOBALS['file_db']->rollBack();
-              echo "Failed: " . $e->getMessage();
-            }
-        }
-
-        function put($request){
-            try {
-                if ($request!=null) {
-                    $amplificado_senal_id = $request['amplificado_senal_id'];
-                    $tipo_amplificado_senal = $request['tipo_amplificado_senal'];
-                    $numero_serie = $request['numero_serie'];
-                    $fecha_instalacion = $request['fecha_instalacion'];
-                    $fecha_proximo_mantenimiento = $request['fecha_proximo_mantenimiento'];
-                    $marca = $request['marca'];
-                    $modelo = $request['modelo'];
-
-                    $update = "UPDATE amplificador_senal SET tipo_amplificado_senal = :tipo_amplificado_senal, numero_serie = :numero_serie, fecha_instalacion = :fecha_instalacion, fecha_proximo_mantenimiento = :fecha_proximo_mantenimiento, marca = :marca, modelo = :modelo where amplificado_senal_id = :amplificado_senal_id";
-                    
-                    $stmt = $GLOBALS['file_db']->prepare($update);
-                    $stmt->bindParam(':amplificado_senal_id', $amplificado_senal_id);
-                    $stmt->bindParam(':tipo_amplificado_senal', $tipo_amplificado_senal);
-                    $stmt->bindParam(':numero_serie', $numero_serie);
-                    $stmt->bindParam(':fecha_instalacion', $fecha_instalacion);
-                    $stmt->bindParam(':fecha_proximo_mantenimiento', $fecha_proximo_mantenimiento);
-                    $stmt->bindParam(':marca', $marca);
-                    $stmt->bindParam(':modelo', $modelo);
-
-                    $stmt->execute();
-                    echo json_encode([]);
-                } else {
-                    echo "";
-                }
-                
-            } catch (Exception $e) {
-              echo "Failed: " . $e->getMessage();
-            }
-        }
-
-        function delete($amplificado_senal_id=null){
-            try {
-                if ($amplificado_senal_id!=null) {
-                    $stmt = $GLOBALS['file_db']->prepare("DELETE from amplificador_senal where amplificado_senal_id = :amplificado_senal_id");
-                    $stmt->bindParam(':amplificado_senal_id', $amplificado_senal_id, PDO::PARAM_STR);
-                    $stmt->execute();
-                    echo json_encode([]);
-                } else {
-                    echo "";
-                }
-                
-            } catch (Exception $e) {
-              echo "Failed: " . $e->getMessage();
-            }
-        }
-    }
-
-    class Producto{
-        function get($facturaId=null){
-            try {
-                if ($facturaId!=null) {
-                    $stmt = $GLOBALS['file_db']->prepare("SELECT * FROM producto WHERE idFactura = :facturaId");
-                    $stmt->bindParam(':facturaId', $facturaId, PDO::PARAM_STR);
-                    $stmt->execute();
-
-                    $data = Array();
-                    while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                        $data[] = $result;
-                    }
-                    echo json_encode($data);
-                } else {
-                    echo "";
-                }
-                
-            } catch (Exception $e) {
-              echo "Failed: " . $e->getMessage();
-            }
-        }
-
-        function post(){
-            try {
-              $request = json_decode(file_get_contents('php://input'), True); 
-              
-              if($request['method'] == 'delete'){
-                 return $this->delete($request['idProducto']);
-              }
-
-              $cantidad = (int)$request['cantidad'];
-              $descripcion = $request['descripcion'];
-              $valorUnitario = (int)$request['valorUnitario'];
-              $idFactura = (int)$request['idFactura'];
-
-              $insert = "INSERT INTO producto (cantidad, descripcion, valorUnitario, idFactura) VALUES (:cantidad, :descripcion, :valorUnitario, :idFactura)";
-              $stmt = $GLOBALS['file_db']->prepare($insert);
-              $stmt->bindParam(':cantidad', $cantidad);
-              $stmt->bindParam(':descripcion', $descripcion);
-              $stmt->bindParam(':valorUnitario', $valorUnitario);
-              $stmt->bindParam(':idFactura', $idFactura);
-
-              $GLOBALS['file_db']->beginTransaction();
-              $stmt->execute();
-              $GLOBALS['file_db']->commit();
-
-              echo json_encode($request); 
-              
-            } catch (Exception $e) {
-              $GLOBALS['file_db']->rollBack();
-              echo "Failed: " . $e->getMessage();
-            }
-        }
-
-        function delete($idProducto=null){
-            try {
-                if ($idProducto!=null) {
-                    $stmt = $GLOBALS['file_db']->prepare("DELETE from producto where id = :idProducto");
-                    $stmt->bindParam(':idProducto', $idProducto, PDO::PARAM_STR);
-                    $stmt->execute();
-                    echo json_encode($idProducto); 
-                } else {
-                    echo "";
-                }
-                
-            } catch (Exception $e) {
-              echo "Failed: " . $e->getMessage();
-            }
-        }
-    }
-
-    class RelacionProdFact{
-        function post(){
-            try {
-                $request = json_decode(file_get_contents('php://input'), True); 
-
-                if($request['method'] === 'delete'){
-                    return $this->delete($request['facturaId']);
-                }
-
-                echo json_encode($request);
-                
-            } catch (Exception $e) {
-              echo "Failed: " . $e->getMessage();
-            }
-        }
-
-        function delete($idFactura=null){
-            try {
-                
-                if ($idFactura!=null) {
-                        $stmt = $GLOBALS['file_db']->prepare("DELETE from producto where idFactura = :idFactura");
-                        $stmt->bindParam(':idFactura', $idFactura, PDO::PARAM_STR);
-                        $stmt->execute();
-                        echo json_encode($idFactura); 
-                    } else {
-                        echo json_encode(""); 
-                    }
                 
             } catch (Exception $e) {
               echo "Failed: " . $e->getMessage();
@@ -988,11 +763,19 @@
     }
 
     Toro::serve(array(
-        "/factura" => "Factura",
-        "/factura/:alpha" => "Factura",
-        "/producto" => "Producto",
-        "/producto/:alpha" => "Producto",
-        "/relacionProdFact" => "RelacionProdFact",
-        "/relacionProdFact/:alpha" => "RelacionProdFact",
+        "/amplificadorsenal" => "AmplificadorSenal",
+        "/amplificadorsenal/:alpha" => "AmplificadorSenal",
+        "/cajadistribucion" => "CajaDistribucion",
+        "/cajadistribucion/:alpha" => "CajaDistribucion",
+        "/cliente" => "Cliente",
+        "/cliente/:alpha" => "Cliente",
+        "/generadorsenal" => "GeneradorSenal",
+        "/generadorsenal/:alpha" => "GeneradorSenal",
+        "/lineaconexion" => "LineaConexion",
+        "/lineaconexion/:alpha" => "LineaConexion",
+        "/poste" => "Poste",
+        "/poste/:alpha" => "Poste",
+        "/zona" => "Zona",
+        "/zona/:alpha" => "Zona",
     ));
 ?>
