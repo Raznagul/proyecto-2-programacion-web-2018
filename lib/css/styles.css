@@ -1,0 +1,12 @@
+.nav-link:hover {
+    cursor: pointer;
+    color: gray !important;
+}
+
+.navbar-brand{
+    color: white !important;
+}
+
+.bg-light{
+    background-color: #007bff !important;
+}

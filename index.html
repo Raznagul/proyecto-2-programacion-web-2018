@@ -3,13 +3,14 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>proyecto</title>
+    <title>TV por Cable</title>
     <script src="lib/babel.min.js"></script>
     <script src="lib/react.production.min.js"></script>
     <script src="lib/react-dom.production.min.js"></script>
     <script src="lib/prop-types.min.js"></script>
     <script src="lib/reactstrap.full.min.js"></script>
     <link rel="stylesheet" href="lib/css/bootstrap.min.css"></link>
+    <link rel="stylesheet" href="lib/css/styles.css"></link>
 </head>
 
 <body>
@@ -20,18 +21,14 @@
         var Container = Reactstrap.Container;
         var Row = Reactstrap.Row;
         var Col = Reactstrap.Col;
-        
-        /*
-         * use this for something later...
-         * this.setState(prevState => {
-                    const { selectedDB, databases } = prevState;
-                    return {
-                      selectedDB: databases.findIndex(
-                        (_, index) => index !== selectedDB
-                      )
-                    };
-                  });
-         */
+        var TableStrap = Reactstrap.Table;
+        var Navbar = Reactstrap.Navbar;
+        var NavbarBrand = Reactstrap.NavbarBrand;
+        var Nav = Reactstrap.Nav;
+        var NavItem = Reactstrap.NavItem;
+        var NavLink = Reactstrap.NavLink;
+        var Input = Reactstrap.Input;
+        var Button = Reactstrap.Button;
         
         const databases = [
         {
@@ -80,12 +77,18 @@
           const { selectedDB, databases, data, selectedItem } = this.state;
           return (
             <div>
-              <header>
-                <Container fluid>
-                    <Row>
-                    {databases.map((DB) => (<Col onClick={() => this.onSelectDataBase(DB)}>{DB.name}</Col>))}
-                    </Row>
-                </Container>
+              <header>            
+                <Navbar color="light" light expand="md">
+                    <NavbarBrand href="/">TV por Cable</NavbarBrand>
+                </Navbar>
+                <Nav>
+                    {databases.map((DB) => (
+                            <NavItem onClick={() => this.onSelectDataBase(DB)}>
+                                <NavLink>{DB.name}</NavLink>
+                            </NavItem>))}
+                  </Nav>
+               
+                
               </header>  
               <Container fluid>
                 <Row>
@@ -198,10 +201,10 @@
           return (
             <div>
               <h1>Table :{name}</h1>
-              <table>
+              <TableStrap borderless>
                 <TableHeader fields={fields} />
                 <TableBody fields={fields} data={data} onSelectItem={onSelectItem} />
-              </table>
+              </TableStrap>
             </div>
           );
         }
@@ -259,14 +262,14 @@
         return (
           <div>
             <h1>Form : {name}</h1>
-            <table>
+            <TableStrap borderless>
               {Object.keys(fields).map(key => {
                 const { type: typeOf } = fields[key];
                 return (
                   <tr>
                     <td>{key}</td>
                     <td>
-                      <input
+                      <Input
                         name={key}
                         type={typeOf}
                         value={fieldsData[key]}
@@ -276,9 +279,9 @@
                   </tr>
                 );
               })}
-            </table>
+            </TableStrap>
             {!selectedItem ? (
-              <button
+              <Button color="primary"
                 onClick={() => {
                   const { fieldsData } = this.state;
                   this.props.onAddData({ ...fieldsData });
@@ -286,9 +289,9 @@
                 }}
               >
                 Add
-              </button>
+              </Button>
             ) : (<div>
-              <button
+              <Button color="primary"
                 onClick={() => {
                   const { fieldsData } = this.state;
                   this.props.onSetData({ ...fieldsData });
@@ -296,8 +299,8 @@
                 }}
               >
                 Set
-              </button>
-                <button
+              </Button>
+                <Button color="primary"
                   onClick={() => {
                     const { fieldsData } = this.state;
                     this.props.onDelData({ ...fieldsData });
@@ -305,7 +308,7 @@
                   }}
                 >
                   Del
-              </button>
+              </Button>
               </div>
             )}
           </div>
