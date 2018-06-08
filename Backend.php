@@ -3,7 +3,7 @@
 
     try {
         // Create (connect to) SQLite database in file
-        $file_db = new PDO('sqlite:TVPorCable.db');
+        $file_db = new PDO('sqlite:DB/TVPorCable.db');
         // Set errormode to exceptions
         $file_db->setAttribute(PDO::ATTR_ERRMODE, 
                                 PDO::ERRMODE_EXCEPTION);
