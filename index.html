@@ -32,21 +32,97 @@
         
         const databases = [
         {
-          name: "facturas",
+          name: "amplificadorsenal",
+          pk: 'amplificado_senal_id',
           fields: {
-            id: { type: "number" },
-            fecha: { type: "date" },
-            cliente: { type: "string" },
+            amplificado_senal_id: { type: 'number', pk: true },  
+            tipo_amplificado_senal: { type: 'string' },
+            numero_serie: { type: 'string' },
+            fecha_instalacion: { type: 'date' },
+            fecha_proximo_mantenimiento: { type: 'date' },
+            marca:{ type: 'string' },
+            modelo:{ type: 'string' }
           }
         },
         {
-          name: "database#2",
+            name: "cajadistribucion",
+            pk: 'caja_distribucion_id',
+            fields:{
+              caja_distribucion_id: { type: 'number', pk: true},
+              conectores_totales: { type: 'number' },
+              conectores_libres: { type: 'number' },
+              poste_id: { type: 'number' },
+              numero_serie: { type: 'string' },
+              fecha_instalacion: { type: 'date' },
+              fecha_proximo_mantenimiento: { type: 'date' },
+              marca: { type: 'string' },
+              modelo: { type: 'string' },
+            },
+        },
+        {
+            name: "cliente",
+            pk: 'cliente_id',
+            fields: {
+                cliente_id: { type: 'number', pk: true },
+                nombre: { type: 'string' },
+                telefono: { type: 'number' },
+                direccion: { type: 'string' },
+                cedula: { type: 'string' },
+                pendiendte_cobro: { type: 'number' },
+                tipo_servicio: { type: 'string' },
+                
+            }
+        },
+        {
+            name: "generadorsenal",
+            pk: 'generador_senal_id',
+            fields: {
+                generador_senal_id: { type: 'number', pk: true },
+                capacidad_salida: { type: 'number' },
+                numero_serie: { type: 'number' },
+                fecha_instalacion: { type: 'date' },
+                fecha_proximo_mantenimiento: { type: 'date' },
+                marca: { type: 'string' },
+                modelo: { type: 'string' },
+                zona_id: { type: 'number' },
+            },
+        },
+        {
+          name: "lineaconexion",
+          pk: 'linea_conexion_id',
           fields: {
-            name: { type: "string" },
-            bornDate: { type: "date" },
-            info: { type: "string" }
-          }
-        }
+              linea_conexion_id: { type: 'number', pk: true },
+              numero_serie: { type: 'string' },
+              fecha_instalacion: { type: 'date' },
+              marca: { type: 'string' },
+              modelo: { type: 'string' },
+              tipo_linea_conexcion: { type: 'string' },
+              conexion_a: { type: 'string' }, //??
+              conexcion_b: { type: 'string' }, //??
+          },
+        },
+        {
+            name: "poste",
+            pk: 'poste_id',
+            fields: {
+                poste_id: { type: 'number', pk: true},
+                numero_serie: { type: 'string' },
+                fecha_instalacion: { type: 'date' },
+                fecha_proximo_mantenimiento: { type: 'date' },
+                marca: { type: 'string' },
+                modelo: { type: 'string' },
+            }
+        },
+        {
+            name: "zona",
+            pk: 'zona_id',
+            fields: {
+                zona_id:{ type: 'number', pk: true },
+                tipo_zona:{ type: 'string' },
+            },
+        },
+        
+        
       ];
       
       function setFieldByType(typeOf, value) {
@@ -71,6 +147,14 @@
         
         componentWillMount(){
             this.onGetData()
+        }
+        
+        componentDidUpdate(_,prevState){
+            
+            if(prevState.selectedDB !== this.state.selectedDB){
+                console.log('lol')
+                this.onGetData()
+            }
         }
 
         render() {
@@ -116,10 +200,11 @@
         onSelectDataBase = selectedDB => {
             this.setState({ selectedDB })
         }
+        
         onGetData = () => {
             const { selectedDB } = this.state
             
-            fetch(`http://localhost/Lic/trabajo09/hello.php/${selectedDB.name}`)
+            fetch(`http://localhost/Lic/proyecto-2-programacion-web-2018/Backend.php/${selectedDB.name}`)
                 .then((res) => {
                     return res.json();
                 })
@@ -129,10 +214,11 @@
                 })
         }
         
-        onFact = (args) => {
-            console.log(args)
-            const { selectedDB } = this.state
-            fetch(`http://localhost/Lic/trabajo09/hello.php/${selectedDB.name}`, {
+        onPost = (args) => {
+            const { selectedDB } = this.state            
+            const params = args.method ? `?${selectedDB.pk}=${args[selectedDB.pk]}` : ''
+            
+            fetch(`http://localhost/Lic/proyecto-2-programacion-web-2018/Backend.php/${selectedDB.name}${params}`, {
                 method: "post",
                 headers: {'Content-Type': 'application/json',
                                    'Content-Length': 20},
@@ -147,14 +233,15 @@
             
         onAddData = newItem => {
           const { data } = this.state;
-          this.onFact({ ...newItem })
+          this.onPost({ ...newItem })
           this.setState({ data: [...data, { ...newItem }] });
         };
 
         onSetData = newItem => {
-          const { data } = this.state;
-          const newData = data.filter(({ id }) => id !== newItem.id);
-
+          const { data, selectedDB } = this.state;
+          const newData = data.filter((data) => data[selectedDB.pk] !== newItem[selectedDB.pk]);
+          this.onPost({ ...newItem, method: 'put' })
+          
           this.setState({
             data: [...newData, { ...newItem }],
             selectedItem: undefined
@@ -162,9 +249,9 @@
         };
 
         onDelData = item => {
-          const { data } = this.state;
-          const newData = data.filter(({ id }) => id !== item.id);
-
+          const { data, selectedDB } = this.state;
+          const newData = data.filter((data) => data[selectedDB.pk] !== item[selectedDB.pk]);
+          this.onPost({ ...item, method: 'delete' })
           this.setState({
             data: [...newData],
             selectedItem: undefined
@@ -218,7 +305,7 @@
         return (
           <tbody>
             {data.map(row => (
-              <tr key={row.id} onClick={() => onSelectItem({ ...row })}>
+              <tr className="row-hover" key={row.id} onClick={() => onSelectItem({ ...row })}>
                 {Object.keys(fields).map(key => {
                   const { type: typeOf } = fields[key];
                   const value = setFieldByType(typeOf, row[key]);
@@ -264,7 +351,8 @@
             <h1>Form : {name}</h1>
             <TableStrap borderless>
               {Object.keys(fields).map(key => {
-                const { type: typeOf } = fields[key];
+                const { type: typeOf, pk } = fields[key];
+                const disabled = pk ? true : false    
                 return (
                   <tr>
                     <td>{key}</td>
@@ -274,6 +362,7 @@
                         type={typeOf}
                         value={fieldsData[key]}
                         onChange={this.handleOnChangeFieldData}
+                        disabled={disabled}
                       />
                     </td>
                   </tr>

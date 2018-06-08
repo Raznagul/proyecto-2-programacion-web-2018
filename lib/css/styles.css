@@ -10,3 +10,12 @@
 .bg-light{
     background-color: #007bff !important;
 }
+
+.row-hover {
+    border-radius: .25rem;
+}
+
+.row-hover:hover {
+    cursor: pointer;
+    background-color: #007bff40 !important;
+}
