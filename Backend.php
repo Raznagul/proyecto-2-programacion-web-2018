@@ -762,6 +762,98 @@
         }
     }
 
+    class Usuario {
+
+        function get() {
+            try {
+                $stmt = $GLOBALS['file_db']->prepare("SELECT * FROM usuario");
+                $stmt->execute();
+
+                $data = Array();
+                while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $data[] = $result;
+                }
+                echo json_encode($data);
+            } catch (Exception $e) {
+            echo "Failed: " . $e->getMessage();
+            }
+        }
+
+        function post() {
+            try {
+              $request = json_decode(file_get_contents('php://input'), True); 
+
+              if($request['method'] === 'put'){
+                  return $this->put($request);
+              }else if($request['method'] === 'delete'){
+                  return $this->delete($request['usuario_id']);
+              }
+
+              $nombre = $request['nombre'];
+              $contrasena = $request['contrasena'];
+
+              $insert = "INSERT INTO usuario (nombre, contrasena) VALUES (:nombre, :contrasena)";
+              $stmt = $GLOBALS['file_db']->prepare($insert);
+              $stmt->bindParam(':nombre', $nombre);
+              $stmt->bindParam(':contrasena', $contrasena);
+              $stmt->execute();
+
+              $stmt = $GLOBALS['file_db']->prepare("SELECT last_insert_rowid() as row");
+              $stmt->execute();
+              $data = Array();
+              while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                  $data[] = $result;
+              }
+              echo json_encode($data);
+
+            } catch (Exception $e) {
+              $GLOBALS['file_db']->rollBack();
+              echo "Failed: " . $e->getMessage();
+            }
+        }
+
+        function put($request){
+            try {
+                if ($request!=null) {
+                    $usuario_id = $request['usuario_id'];
+                    $nombre = $request['nombre'];
+                    $contrasena = $request['contrasena'];
+
+                    $update = "UPDATE usuario SET nombre = :nombre, contrasena = :contrasena where usuario_id = :usuario_id";
+                    
+                    $stmt = $GLOBALS['file_db']->prepare($update);
+                    $stmt->bindParam(':usuario_id', $usuario_id);
+                    $stmt->bindParam(':nombre', $nombre);
+                    $stmt->bindParam(':contrasena', $contrasena);
+
+                    $stmt->execute();
+                    echo json_encode([]);
+                } else {
+                    echo "";
+                }
+                
+            } catch (Exception $e) {
+              echo "Failed: " . $e->getMessage();
+            }
+        }
+
+        function delete($usuario_id=null){
+            try {
+                if ($usuario_id!=null) {
+                    $stmt = $GLOBALS['file_db']->prepare("DELETE from usuario where usuario_id = :usuario_id");
+                    $stmt->bindParam(':usuario_id', $zona_id, PDO::PARAM_STR);
+                    $stmt->execute();
+                    echo json_encode([]);
+                } else {
+                    echo "";
+                }
+                
+            } catch (Exception $e) {
+              echo "Failed: " . $e->getMessage();
+            }
+        }
+    }
+
     Toro::serve(array(
         "/amplificadorsenal" => "AmplificadorSenal",
         "/amplificadorsenal/:alpha" => "AmplificadorSenal",
@@ -777,5 +869,7 @@
         "/poste/:alpha" => "Poste",
         "/zona" => "Zona",
         "/zona/:alpha" => "Zona",
+        "/usuario" => "Zona",
+        "/usuario/:alpha" => "Zona",
     ));
 ?>
