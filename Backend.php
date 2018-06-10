@@ -854,6 +854,50 @@
         }
     }
 
+    class UsuarioValidation {
+
+        function get() {
+            try {
+                $stmt = $GLOBALS['file_db']->prepare("SELECT * FROM usuario");
+                $stmt->execute();
+
+                $data = Array();
+                while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $data[] = $result;
+                }
+                echo json_encode($data);
+            } catch (Exception $e) {
+            echo "Failed: " . $e->getMessage();
+            }
+        }
+
+        function post() {
+            try {
+              $request = json_decode(file_get_contents('php://input'), True); 
+
+              $nombre = $request['nombre'];
+              $contrasena = $request['contrasena'];
+
+              $select = "SELECT * FROM usuario WHERE nombre = :nombre AND contrasena = :contrasena";
+              $stmt = $GLOBALS['file_db']->prepare($select);
+              $stmt->bindParam(':nombre', $nombre);
+              $stmt->bindParam(':contrasena', $contrasena);
+              $stmt->execute();
+
+              $stmt = $GLOBALS['file_db']->prepare("SELECT last_insert_rowid() as row");
+              $stmt->execute();
+              $data = Array();
+              while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                  $data[] = $result;
+              }
+              echo json_encode($data);
+
+            } catch (Exception $e) {
+              echo "Failed: " . $e->getMessage();
+            }
+        }
+    }
+
     Toro::serve(array(
         "/amplificadorsenal" => "AmplificadorSenal",
         "/amplificadorsenal/:alpha" => "AmplificadorSenal",
@@ -869,7 +913,9 @@
         "/poste/:alpha" => "Poste",
         "/zona" => "Zona",
         "/zona/:alpha" => "Zona",
-        "/usuario" => "Zona",
-        "/usuario/:alpha" => "Zona",
+        "/usuario" => "Usuario",
+        "/usuario/:alpha" => "Usuario",
+        "/usuariovalidation" => "UsuarioValidation",
+        "/usuariovalidation/:alpha" => "UsuarioValidation",
     ));
 ?>
