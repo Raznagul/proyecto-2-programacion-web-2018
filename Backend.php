@@ -897,6 +897,24 @@
         }
     }
 
+    class Mantenimiento {
+
+        function get() {
+            try {
+                $stmt = $GLOBALS['file_db']->prepare("SELECT * FROM generador_senal WHERE fecha_proximo_mantenimiento >= date('now','start of month') AND fecha_proximo_mantenimiento <= date('now','start of month','+1 month')");
+                $stmt->execute();
+
+                $data = Array();
+                while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $data[] = $result;
+                }
+                echo json_encode($data);
+            } catch (Exception $e) {
+            echo "Failed: " . $e->getMessage();
+            }
+        }
+    }
+
     Toro::serve(array(
         "/amplificadorsenal" => "AmplificadorSenal",
         "/amplificadorsenal/:alpha" => "AmplificadorSenal",
@@ -916,5 +934,6 @@
         "/usuario/:alpha" => "Usuario",
         "/usuariovalidation" => "UsuarioValidation",
         "/usuariovalidation/:alpha" => "UsuarioValidation",
+        "/data/mantenimiento/mes" => "Mantenimiento",
     ));
 ?>
