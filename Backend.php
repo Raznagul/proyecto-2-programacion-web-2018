@@ -32,9 +32,9 @@
             try {
               $request = json_decode(file_get_contents('php://input'), True); 
 
-              if($request['method'] === 'put'){
+              if(isset($request['method']) && $request['method'] === 'put'){
                   return $this->put($request);
-              }else if($request['method'] === 'delete'){
+              }else if(isset($request['method']) && $request['method'] === 'delete'){
                   return $this->delete($request['amplificado_senal_id']);
               }
 
@@ -140,9 +140,9 @@
             try {
               $request = json_decode(file_get_contents('php://input'), True); 
 
-              if($request['method'] === 'put'){
+              if(isset($request['method']) && $request['method'] === 'put'){
                   return $this->put($request);
-              }else if($request['method'] === 'delete'){
+              }else if(isset($request['method']) && $request['method'] === 'delete'){
                   return $this->delete($request['caja_distribucion_id']);
               }
 
@@ -254,9 +254,9 @@
             try {
               $request = json_decode(file_get_contents('php://input'), True); 
 
-              if($request['method'] === 'put'){
+              if(isset($request['method']) && $request['method'] === 'put'){
                   return $this->put($request);
-              }else if($request['method'] === 'delete'){
+              }else if(isset($request['method']) && $request['method'] === 'delete'){
                   return $this->delete($request['cliente_id']);
               }
 
@@ -363,9 +363,9 @@
             try {
               $request = json_decode(file_get_contents('php://input'), True); 
 
-              if($request['method'] === 'put'){
+              if(isset($request['method']) && $request['method'] === 'put'){
                   return $this->put($request);
-              }else if($request['method'] === 'delete'){
+              }else if(isset($request['method']) && $request['method'] === 'delete'){
                   return $this->delete($request['generador_senal_id']);
               }
 
@@ -475,9 +475,9 @@
             try {
               $request = json_decode(file_get_contents('php://input'), True); 
 
-              if($request['method'] === 'put'){
+              if(isset($request['method']) && $request['method'] === 'put'){
                   return $this->put($request);
-              }else if($request['method'] === 'delete'){
+              }else if(isset($request['method']) && $request['method'] === 'delete'){
                   return $this->delete($request['linea_conexion_id']);
               }
 
@@ -591,9 +591,9 @@
             try {
               $request = json_decode(file_get_contents('php://input'), True); 
 
-              if($request['method'] === 'put'){
+              if(isset($request['method']) && $request['method'] === 'put'){
                   return $this->put($request);
-              }else if($request['method'] === 'delete'){
+              }else if(isset($request['method']) && $request['method'] === 'delete'){
                   return $this->delete($request['poste_id']);
               }
 
@@ -695,9 +695,9 @@
             try {
               $request = json_decode(file_get_contents('php://input'), True); 
 
-              if($request['method'] === 'put'){
+              if(isset($request['method']) && $request['method'] === 'put'){
                   return $this->put($request);
-              }else if($request['method'] === 'delete'){
+              }else if(isset($request['method']) && $request['method'] === 'delete'){
                   return $this->delete($request['zona_id']);
               }
 
@@ -783,9 +783,9 @@
             try {
               $request = json_decode(file_get_contents('php://input'), True); 
 
-              if($request['method'] === 'put'){
+              if(isset($request['method']) && $request['method'] === 'put'){
                   return $this->put($request);
-              }else if($request['method'] === 'delete'){
+              }else if(isset($request['method']) && $request['method'] === 'delete'){
                   return $this->delete($request['usuario_id']);
               }
 
@@ -884,7 +884,6 @@
               $stmt->bindParam(':contrasena', $contrasena);
               $stmt->execute();
 
-              $stmt = $GLOBALS['file_db']->prepare("SELECT last_insert_rowid() as row");
               $stmt->execute();
               $data = Array();
               while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
