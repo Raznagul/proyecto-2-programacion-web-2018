@@ -139,42 +139,48 @@
             data: [],
             databases,
             selectedDB: databases[0],
-            selectedItem: undefined
+            selectedItem: undefined,
+            isLogged: false
           };
         }
 
         componentWillReceiveProps() {}
         
         componentWillMount(){
+            this.setState({ isLogged: this.isLogged() })
             this.onGetData()
         }
         
-        componentDidUpdate(_,prevState){
-            
+        componentDidUpdate(_,prevState){            
             if(prevState.selectedDB !== this.state.selectedDB){
-                console.log('lol')
                 this.onGetData()
             }
         }
 
         render() {
-          const { selectedDB, databases, data, selectedItem } = this.state;
+          const { selectedDB, databases, data, selectedItem, isLogged } = this.state;
           return (
             <div>
               <header>            
                 <Navbar color="light" light expand="md">
                     <NavbarBrand href="/">TV por Cable</NavbarBrand>
+                    <Nav className="ml-auto" navbar>
+                        {isLogged && <NavItem onClick={() => this.onLogout()}>
+                          <NavLink>Log out</NavLink>
+                        </NavItem>}
+                    </Nav>   
                 </Navbar>
-                <Nav>
+                {isLogged && <Nav>
                     {databases.map((DB) => (
                             <NavItem onClick={() => this.onSelectDataBase(DB)}>
                                 <NavLink>{DB.name}</NavLink>
                             </NavItem>))}
-                  </Nav>
+                </Nav>}
                
                 
               </header>  
-              <Container fluid>
+              
+              {isLogged ? (<Container fluid>
                 <Row>
                     <Col>
                         <Table
@@ -193,7 +199,14 @@
                         />
                    </Col> 
                 </Row>
-              </Container>  
+              </Container>) : (
+              <Container fluid>
+                <Row>
+                    <Col>
+                        <Login onLogin={this.onLogin}/>
+                    </Col> 
+                </Row>
+              </Container>)}  
             </div>
           );
         }
@@ -210,7 +223,6 @@
                 })
                 .then((data) => {
                     this.setState({data});
-                    console.log('data',data)
                 })
         }
         
@@ -227,8 +239,22 @@
                     return res.json();
                 })
                 .then((data) => {
-                    console.log('data',data)
+                    this.onGetData()
                 })
+        }
+        
+        isLogged = () => {
+            return localStorage.getItem('isLogged');
+        }
+        
+        onLogin = () => {
+            localStorage.setItem('isLogged', true);
+            this.setState({ isLogged: true })
+        }
+        
+        onLogout = () => {
+            localStorage.removeItem('isLogged')
+            this.setState({ isLogged: false })
         }
             
         onAddData = newItem => {
@@ -250,8 +276,11 @@
 
         onDelData = item => {
           const { data, selectedDB } = this.state;
-          const newData = data.filter((data) => data[selectedDB.pk] !== item[selectedDB.pk]);
-          this.onPost({ ...item, method: 'delete' })
+          const newData = item ? data.filter((data) => data[selectedDB.pk] !== item[selectedDB.pk]) : data
+          if(item) {
+            this.onPost({ ...item, method: 'delete' })
+          }
+            
           this.setState({
             data: [...newData],
             selectedItem: undefined
@@ -398,6 +427,15 @@
                 >
                   Del
               </Button>
+              <Button color="primary"
+                  onClick={() => {
+                    const { fieldsData } = this.state;
+                    this.props.onDelData();
+                    this.setState({ fieldsData: {} });
+                  }}
+                >
+                  Cancel
+              </Button>
               </div>
             )}
           </div>
@@ -414,6 +452,93 @@
       };
     }
     
+    class Login extends React.Component {
+        constructor(props) {
+            super(props)
+            
+            this.state = {
+                fieldsData: {
+                    nombre: '',
+                    contrasena: '',
+                }    
+            }
+        }
+        
+        handleOnChangeFieldData = e => {
+            const { fieldsData } = this.state;
+            const newValue = e.target.value;
+            const field = e.target.name;
+            const newFieldsData = { ...fieldsData, [field]: newValue };
+
+            this.setState({ fieldsData: newFieldsData });
+        };
+        
+        handleOnLogin = () => {
+            const { fieldsData } = this.state
+            const { onLogin } = this.props
+            
+            fetch(`http://localhost/Lic/proyecto-2-programacion-web-2018/Backend.php/usuariovalidation`, {
+                method: "post",
+                headers: {'Content-Type': 'application/json',
+                                   'Content-Length': 20},
+                body: JSON.stringify({...fieldsData})
+            }).then((res) => {
+                    return res.json();
+                })
+                .then((data) => {
+                    if(data.length){
+                        onLogin()
+                    }
+                })
+                                                                            
+        }
+                                                                            
+        
+        handleOnCreateAcount = () => {
+            const { fieldsData } = this.state
+            const { onLogin } = this.props
+            
+            fetch(`http://localhost/Lic/proyecto-2-programacion-web-2018/Backend.php/usuario`, {
+                method: "post",
+                headers: {'Content-Type': 'application/json',
+                                   'Content-Length': 20},
+                body: JSON.stringify({...fieldsData})
+            }).then((res) => {
+                    return res.json();
+                })
+                .then((data) => {
+                    onLogin()
+                })
+        }
+        
+        render(){
+            return (
+                <div>
+                    <h1>Login</h1>
+                    <TableStrap borderless>
+                        <tbody>
+                            <tr>
+                                <td>Username</td>
+                                <td>
+                                    <Input onChange={this.handleOnChangeFieldData} name={"nombre"} type={"string"} />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Password</td>
+                                <td>
+                                    <Input onChange={this.handleOnChangeFieldData} name={"contrasena"} type={"password"} />
+                                </td>
+                            </tr>
+                        </tbody>
+                                                                                
+                    </TableStrap>
+                    <Button color="primary" onClick={()=> this.handleOnLogin()}> Login </Button>
+                    <Button color="primary" onClick={()=> this.handleOnCreateAcount()}> Create Acount </Button>
+                </div>
+                
+            )
+        }
+    }
     ReactDOM.render(<App />, document.getElementById("root"));
     </script>
 
