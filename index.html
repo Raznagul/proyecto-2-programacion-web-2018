@@ -9,6 +9,8 @@
     <script src="lib/react-dom.production.min.js"></script>
     <script src="lib/prop-types.min.js"></script>
     <script src="lib/reactstrap.full.min.js"></script>
+    <script src="lib/Chart.bundle.min.js"></script>
+    <script src="lib/react-chartkick.js"></script>
     <link rel="stylesheet" href="lib/css/bootstrap.min.css"></link>
     <link rel="stylesheet" href="lib/css/styles.css"></link>
 </head>
@@ -30,6 +32,15 @@
         var Input = Reactstrap.Input;
         var Button = Reactstrap.Button;
         
+        var PieChart = ReactChartkick.PieChart;
+        var LineChart = ReactChartkick.LineChart;
+        
+        var groupBy = function(xs, key) {
+            return xs.reduce(function(rv, x) {
+              (rv[x[key]] = rv[x[key]] || []).push(x);
+              return rv;
+            }, {});
+          };
         const databases = [
         {
           name: "amplificadorsenal",
@@ -149,6 +160,7 @@
         componentWillMount(){
             this.setState({ isLogged: this.isLogged() })
             this.onGetData()
+            this.onGetDataMantenimiento()
         }
         
         componentDidUpdate(_,prevState){            
@@ -158,7 +170,7 @@
         }
 
         render() {
-          const { selectedDB, databases, data, selectedItem, isLogged } = this.state;
+          const { selectedDB, databases, data, selectedItem, isLogged, graph } = this.state;
           return (
             <div>
               <header>            
@@ -197,7 +209,8 @@
                             onDelData={this.onDelData}
                             selectedItem={selectedItem}
                         />
-                   </Col> 
+                   </Col>
+                   {graph && <LineChart data={graph} />}
                 </Row>
               </Container>) : (
               <Container fluid>
@@ -223,6 +236,24 @@
                 })
                 .then((data) => {
                     this.setState({data});
+                })
+        }
+        
+        onGetDataMantenimiento = () => {
+            const { selectedDB } = this.state
+            
+            fetch(`http://localhost/Lic/proyecto-2-programacion-web-2018/Backend.php/data/mantenimiento/mes`)
+                .then((res) => {
+                    return res.json();
+                })
+                .then((data) => {
+                    const groupsByDate = groupBy(data, 'fecha_proximo_mantenimiento')
+                    Object.keys(groupsByDate).forEach((groupKey) =>{
+                        groupsByDate[groupKey] = groupsByDate[groupKey].length
+                    })
+                    
+                    debugger
+                    this.setState({graph: groupsByDate});
                 })
         }
         
