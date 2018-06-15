@@ -899,9 +899,38 @@
 
     class Mantenimiento {
 
+        function get($mes=null) {
+            try {
+                $period = null;
+                if($mes === "mes"){
+                    $period = "-0 month";
+                } elseif ($mes === "trimestre") {
+                    $period = "-2 month";
+                } elseif ($mes === "semestre") {
+                    $period = "-5 month";
+                }
+                $select = "SELECT * FROM generador_senal WHERE fecha_proximo_mantenimiento >= date('now','start of month',:period) AND fecha_proximo_mantenimiento <= date('now','start of month','+1 month')";
+                $stmt = $GLOBALS['file_db']->prepare($select);
+                $stmt->bindParam(':period', $period);
+                $stmt->execute();
+
+                $data = Array();
+                while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $data[] = $result;
+                }
+                echo json_encode($data);
+            } catch (Exception $e) {
+            echo "Failed: " . $e->getMessage();
+            }
+        }
+    }
+
+    class TipoServicio {
+
         function get() {
             try {
-                $stmt = $GLOBALS['file_db']->prepare("SELECT * FROM generador_senal WHERE fecha_proximo_mantenimiento >= date('now','start of month') AND fecha_proximo_mantenimiento <= date('now','start of month','+1 month')");
+                $select = "select count(tipo_servicio), tipo_servicio from cliente group by tipo_servicio";
+                $stmt = $GLOBALS['file_db']->prepare($select);
                 $stmt->execute();
 
                 $data = Array();
@@ -934,6 +963,7 @@
         "/usuario/:alpha" => "Usuario",
         "/usuariovalidation" => "UsuarioValidation",
         "/usuariovalidation/:alpha" => "UsuarioValidation",
-        "/data/mantenimiento/mes" => "Mantenimiento",
+        "/data/mantenimiento/:alpha" => "Mantenimiento",
+        "/data/tiposervicio" => "TipoServicio",
     ));
 ?>
