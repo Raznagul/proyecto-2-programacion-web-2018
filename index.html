@@ -79,7 +79,7 @@
                 telefono: { type: 'number' },
                 direccion: { type: 'string' },
                 cedula: { type: 'string' },
-                pendiendte_cobro: { type: 'number' },
+                pendiente_cobro: { type: 'number' },
                 tipo_servicio: { type: 'string' },
                 
             }
@@ -151,7 +151,8 @@
             databases,
             selectedDB: databases[0],
             selectedItem: undefined,
-            isLogged: false
+            isLogged: false,
+            graphs: {}
           };
         }
 
@@ -161,6 +162,9 @@
             this.setState({ isLogged: this.isLogged() })
             this.onGetData()
             this.onGetDataMantenimiento()
+            this.onGetDataMantenimiento('trimestre')
+            this.onGetDataMantenimiento('semestre')
+            this.onGetTipoServicio()
         }
         
         componentDidUpdate(_,prevState){            
@@ -170,7 +174,9 @@
         }
 
         render() {
-          const { selectedDB, databases, data, selectedItem, isLogged, graph } = this.state;
+          const { selectedDB, databases, data, selectedItem, isLogged, graphs } = this.state;
+          const mes = graphs.mes && <LineChart data={graphs.mes} />
+          console.log('graphs', graphs)
           return (
             <div>
               <header>            
@@ -210,7 +216,26 @@
                             selectedItem={selectedItem}
                         />
                    </Col>
-                   {graph && <LineChart data={graph} />}
+                </Row>
+                <Row>
+                    <Col md='6'>
+                        <h1>Mantenimiento por mes</h1>
+                        {graphs.mes && <LineChart data={graphs.mes} />}
+                    </Col>
+                    <Col md='6'>
+                        <h1>Mantenimiento por trimestre</h1>
+                        {graphs.trimestre && <LineChart data={graphs.trimestre} />}
+                    </Col>
+                    <Col md='6'>
+                        <h1>Mantenimiento por semestre</h1>
+                        {graphs.semestre && <LineChart data={graphs.semestre} />}
+                    </Col>
+                    <Col md='6'>
+                        <h1>Tipo de servicios</h1>
+                        {graphs.tiposervicio && <PieChart data={graphs.tiposervicio} />}
+                    </Col>
+                    
+
                 </Row>
               </Container>) : (
               <Container fluid>
@@ -239,10 +264,8 @@
                 })
         }
         
-        onGetDataMantenimiento = () => {
-            const { selectedDB } = this.state
-            
-            fetch(`http://localhost/Lic/proyecto-2-programacion-web-2018/Backend.php/data/mantenimiento/mes`)
+        onGetDataMantenimiento = (byDate = 'mes') => {
+            fetch(`http://localhost/Lic/proyecto-2-programacion-web-2018/Backend.php/data/mantenimiento/${byDate}`)
                 .then((res) => {
                     return res.json();
                 })
@@ -251,9 +274,30 @@
                     Object.keys(groupsByDate).forEach((groupKey) =>{
                         groupsByDate[groupKey] = groupsByDate[groupKey].length
                     })
-                    
+                    const newGraph = groupsByDate 
+                    this.setState((prev) => {
+                        
+                        return {graphs: { ...prev.graphs, [byDate]: newGraph }}
+                    });
+                })
+        }
+        
+        onGetTipoServicio = () => {
+            fetch(`http://localhost/Lic/proyecto-2-programacion-web-2018/Backend.php/data/tiposervicio`)
+                .then((res) => {
+                    return res.json();
+                })
+                .then((data) => {
                     debugger
-                    this.setState({graph: groupsByDate});
+                    const tiposervicios = data.map((x) => {
+                        return [x.tipo_servicio, x['count(tipo_servicio)']]
+                    })
+                                        
+                    const newGraph = tiposervicios 
+                    this.setState((prev) => {
+                        
+                        return {graphs: { ...prev.graphs, ['tiposervicio']: newGraph }}
+                    });
                 })
         }
         
