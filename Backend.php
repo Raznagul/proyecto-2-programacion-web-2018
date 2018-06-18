@@ -909,9 +909,73 @@
                 } elseif ($mes === "semestre") {
                     $period = "-5 month";
                 }
+
+                $resultdata = Array();
+                
+                $select = "SELECT * FROM caja_distribucion WHERE fecha_proximo_mantenimiento >= date('now','start of month',:period) AND fecha_proximo_mantenimiento <= date('now','start of month','+1 month')";
+                $stmt = $GLOBALS['file_db']->prepare($select);
+                $stmt->bindParam(':period', $period);
+                $stmt->execute();
+
+                $data = Array();
+                while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $data[] = $result;
+                }
+                $resultdata = array_merge($resultdata, $data);
+
                 $select = "SELECT * FROM generador_senal WHERE fecha_proximo_mantenimiento >= date('now','start of month',:period) AND fecha_proximo_mantenimiento <= date('now','start of month','+1 month')";
                 $stmt = $GLOBALS['file_db']->prepare($select);
                 $stmt->bindParam(':period', $period);
+                $stmt->execute();
+
+                $data = Array();
+                while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $data[] = $result;
+                }
+                $resultdata = array_merge($resultdata, $data);
+                $select = "SELECT * FROM linea_conexion WHERE fecha_proximo_mantenimiento >= date('now','start of month',:period) AND fecha_proximo_mantenimiento <= date('now','start of month','+1 month')";
+                $stmt = $GLOBALS['file_db']->prepare($select);
+                $stmt->bindParam(':period', $period);
+                $stmt->execute();
+
+                $data = Array();
+                while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $data[] = $result;
+                }
+                $resultdata = array_merge($resultdata, $data);
+                $select = "SELECT * FROM poste   WHERE fecha_proximo_mantenimiento >= date('now','start of month',:period) AND fecha_proximo_mantenimiento <= date('now','start of month','+1 month')";
+                $stmt = $GLOBALS['file_db']->prepare($select);
+                $stmt->bindParam(':period', $period);
+                $stmt->execute();
+
+                $data = Array();
+                while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $data[] = $result;
+                }
+                $resultdata = array_merge($resultdata, $data);
+                $select = "SELECT * FROM amplificador_senal WHERE fecha_proximo_mantenimiento >= date('now','start of month',:period) AND fecha_proximo_mantenimiento <= date('now','start of month','+1 month')";
+                $stmt = $GLOBALS['file_db']->prepare($select);
+                $stmt->bindParam(':period', $period);
+                $stmt->execute();
+
+                $data = Array();
+                while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $data[] = $result;
+                }
+                $resultdata = array_merge($resultdata, $data);
+                echo json_encode($resultdata);
+            } catch (Exception $e) {
+            echo "Failed: " . $e->getMessage();
+            }
+        }
+    }
+
+    class TipoServicio {
+
+        function get() {
+            try {
+                $select = "select count(tipo_servicio), tipo_servicio from cliente group by tipo_servicio";
+                $stmt = $GLOBALS['file_db']->prepare($select);
                 $stmt->execute();
 
                 $data = Array();
@@ -925,11 +989,11 @@
         }
     }
 
-    class TipoServicio {
+    class GeneradorZona {
 
         function get() {
             try {
-                $select = "select count(tipo_servicio), tipo_servicio from cliente group by tipo_servicio";
+                $select = "SELECT count(z.tipo_zona), z.tipo_zona FROM generador_senal g join zona z where g.zona_id =z.zona_id group by z.tipo_zona";
                 $stmt = $GLOBALS['file_db']->prepare($select);
                 $stmt->execute();
 
@@ -965,5 +1029,6 @@
         "/usuariovalidation/:alpha" => "UsuarioValidation",
         "/data/mantenimiento/:alpha" => "Mantenimiento",
         "/data/tiposervicio" => "TipoServicio",
+        "/data/generadorzona" => "GeneradorZona",
     ));
 ?>
